@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH -J eggnog_mapper
+#SBATCH -p RM-shared
+#SBATCH -o the_nog_%j.txt
+#SBATCH -e the_nog_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=10:00:00
+
+# before running, download eggnog in a conda environment
+## conda activate eggnog_env
+## conda install bioconda::eggnog-mapper #version is 2.1.12
+
+# load your conda env
+module load anaconda3
+conda activate eggnog_env
+
+EGGNOG_DATA_DIR="data_directory" #insert path to your data directory
+
+#download the eggnog database; only do this once!
+download_eggnog_data.py -F --data_dir ${EGGNOG_DATA_DIR}
+
+cd ... #set your working directory
+
+# run eggnog mapper
+emapper.py --cpu 0 -i transcripts.faa -o transcripts_eggnog_output \
+--data_dir ${EGGNOG_DATA_DIR}
+
+#--cpu 0 runs with maximum number of available CPUs
+# -i is file input, assumed that they are proteins; -o is output name
+# --data_dir is where the databases are
+
