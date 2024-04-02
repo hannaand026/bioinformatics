@@ -1,0 +1,50 @@
+#!/bin/bash
+#SBATCH -J BWA
+#SBATCH -p RM
+#SBATCH -o BWA.txt
+#SBATCH -e BWA.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=128
+#SBATCH --time=47:00:00
+
+#```````````````````````````````````````````
+#original BWA script written by John Tracey
+#modified by Hanna Anderson
+#```````````````````````````````````````````
+
+# before running, download bwa in a conda environment
+## conda activate bwa_env
+## conda install -c bioconda bwa
+
+# set your working directories
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/reference" #this is whatever directory your reference file is in
+READS_DIR="${BASE_DIR}/reads" #this is whatever directory contains the reads you are mapping
+
+# load environment with bwa downloaded
+module load anaconda3
+conda activate bwa_env
+
+# define variables
+reference = ${reference_file} #insert name of reference file here
+
+#create index of fasta file for BWA run (only do this once)
+cd ${READS_DIR} #navigate to your reads directory
+bwa index -p prefix_output /${reference_file}
+
+# -p specifies the prefix you want for your index file
+
+#BWA loop
+for infile in *1_noERCC.fastq.gz
+do
+  base=$(basename ${infile} 1_noERCC.fastq.gz)
+  bwa mem -k 10 -aM -t 30 Merged_euk_ref ${infile} ${base}2_noERCC.fastq.gz > ${base}.sam
+done
+
+#Parameters are based on Matt Harke 2021 EM paper
+# -k 10 means the minimum seed length (matches shorter than this are ignored). Default is 20.
+# -aM means (a) include alignments to only 1 of the two pairs of PE reads. Mark these as secondary
+# -M - mark shorter split hits as secondary (aka if BWA maps multiple parts of the reference to a single sequence in the reference, mark these as secondary)
+# -t = threads to use - more = faster but more memory.
