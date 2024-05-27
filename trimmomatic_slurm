@@ -1,0 +1,54 @@
+#!/bin/bash
+#SBATCH -J Trimmomatic
+#SBATCH -p RM-shared
+#SBATCH -o Trim.txt
+#SBATCH -e Trim.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --time=24:00:00
+
+cd #your working directory with your reads
+
+module load anaconda3
+conda activate mapping_env
+module load Trimmomatic/0.39
+
+for sample in *1.fastq.gz
+do
+ base=$(basename ${sample} 1.fastq.gz)
+ trimmomatic PE -threads 16 ${sample} ${base}2.fastq.gz \
+ ${base}1.paired.trim.fastq.gz ${base}1.unpaired.trim.fastq.gz \
+ ${base}2.paired.trim.fastq.gz ${base}2.unpaired.trim.fastq.gz \
+ ILLUMINACLIP:TruSeq3-PE-2.fa:2:28:11:12:True SLIDINGWINDOW:4:15 CROP:97 MINLEN:25 HEADCROP:12
+done
+
+mkdir ./paired_trim_output
+
+mv *.paired.trim* ./paired_trim_output
+
+mkdir ./unpaired_trim_output
+
+mv *.unpaired.trim* ./unpaired_trim_output
+
+# Ilumina clip - remove adapters located in the referenced fasta file
+# Numbers after this command refer to
+# seed mismatces typical values 1 - 2
+# palindrome clip threshold ~28 - 32 based on site below
+# simple clip threshold 7 - 15
+# 12 = minimum adapter length for palindrome mode (super conservative according to website)
+# True refers to keep both reads option - see below website for more explanation - useful for downstream pipelines
+# These numbers will need to be tweaked for each run.
+# Source for these values:
+# http://www.usadellab.org/cms/?page=trimmomatic
+
+# Headcrop - remove first 12 bases - change based on fastqc outputs - may not need at all.
+# CROP: remove everything after first x number of bases
+# Sliding window - take a window of 4 bases and move across each 4 bp window in the read - if average quality is <15 on any 4 bp window, then remove that read. (Harke 2019 specs
+# MINLEN - remove reads that are less than 25 bp
+
+# Also useful:
+# # http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf
+
+# Many specs here were used in Harke 2019

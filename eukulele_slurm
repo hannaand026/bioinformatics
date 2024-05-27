@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -J eukulele
+#SBATCH -p RM
+#SBATCH -o eukulele_%j.txt
+#SBATCH -e eukulele_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=48:00:00
+
+module load anaconda3
+conda activate EUKulele
+
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/eukulele" #path to eukulele folder
+
+#eukulele code using marferret db
+EUKulele --sample_dir ./assemblies/ -m mets --database phylodb --no_busco -o output_phylodb_new
+
+#EUKulele --sample_dir ./assemblies/ -m mets --database mmetsp --no_busco -o output_mmetsp
+
+#--sample_dir indicates location of samples
+#-m mets indicates that these are metaT reads being input
+#--reference_dir indicates folder of reference fasta (only if you don't download automatically
+#--ref_fasta name of reference FASTA in reference_dir
+
+## eukulele documentation--
+#https://eukulele.readthedocs.io/en/latest/parameters.html#parameters

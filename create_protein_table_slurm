@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -J eukulele_create_table
+#SBATCH -p RM-shared
+#SBATCH -o create_table_%j.txt
+#SBATCH -e create_table_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=10:00:00
+
+module load anaconda3
+conda activate EUKulele
+
+# to construct a database including new references to use with eukulele
+
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/eukulele/eukulele_v2/new_refs/" #path to new references in eukulele dir
+
+file_list=$(ls *.pep)
+
+../../EUKulele/scripts/create_protein_table.py --infile_peptide $file_list --infile_taxonomy taxonomy-table-new.txt \
+ --outfile_json prot-map.json --output tax-table.txt --col_source_id Source_ID\
+ --delim \t  --reformat_tax --taxonomy_col_id taxonomy

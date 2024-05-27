@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH -J salmon
+#SBATCH -p RM-shared
+#SBATCH -o salmon_%j.txt
+#SBATCH -e salmon_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=48:00:00
+
+## first, install salmon in your conda environment. mine is called salmon_env
+#conda install -c "bioconda/label/cf201901" salmon
+
+module load anaconda3
+conda activate salmon_env
+
+## set wd
+cd #insert your wd (here, this contains my assembly and the reads I want to align to it)
+
+# make a salmon index file from your assembly file (here ending in '.mrna.fasta'), and save it as 'salmon_index'
+for infile in *.mrna.fasta
+do
+  base=$(basename ${infile} .mrna.fasta)
+salmon index -t ${infile} -i salmon_index
+done
+
+# salmon alignment: my paired reads end in '1.fastq' and '2.fastq'
+for file in *1.fastq
+do
+  base=$(basename ${file} 1.fastq)
+  salmon quant -i salmon_index -l A \
+	-1 ${file} \
+	-2 ${base}2.fastq \
+	-p 8 --validateMappings -o ${file}_quant
+done
+
+# -i is the index generated earlier
+# -p 8 means use 8 threads
+# -l A telles salmon that it should automatically determine the library type of the sequencing reads
+# -o is the output name
