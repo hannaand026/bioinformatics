@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH -p RM-shared
+#SBATCH -o busco_%j.txt
+#SBATCH -e busco_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=52
+#SBATCH --time=48:00:00
+#SBATCH --mem=100Gb
+
+cd #insert path to your assembly
+
+module load anaconda3
+conda activate spades_env
+module load busco/5.0.0
+
+busco -i [SEQUENCE_FILE] -l [LINEAGE] -o [OUTPUT_NAME] -m [MODE] [OTHER OPTIONS]

@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH -J RM_ERCC
+#SBATCH -p RM-shared
+#SBATCH -o RM_ERCC.txt
+#SBATCH -e RM_ERCC.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=5
+#SBATCH --cpus-per-task=8
+#SBATCH --time=47:00:00
+
+module load anaconda3
+conda activate mapping_env
+module load bbmap/39.01
+module load FastQC/0.11.9
+
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/ERCC_stds" #this is wherever your ERCC standards are
+
+# BBduk to remove ERCC standards
+
+for infile in *1.paired.trim.fastq.gz
+do
+  base=$(basename ${infile} 1.paired.trim.fastq.gz)
+  bbduk.sh threads=8 in=${infile} in2=${base}2.paired.trim.fastq.gz k=31 ref=${REF_DIR}/ERCC92.fa \
+  out1=${base}1_noERCC.fastq.gz out2=${base}2_noERCC.fastq.gz minlength=60
+done
+
+# FASTQC
+
+mkdir ${BASE_DIR}/FASTQC_After_bbduk
+
+for i in $(find . -name "*noERCC.fastq.gz");do fastqc -o ${BASE_DIR}/FASTQC_After_bbduk $i; done
+
+mkdir No_ERCC_reads
+mv *noERCC.fastq.gz No_ERCC_reads/
+
