@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH -J cd-hit
+#SBATCH -p RM-shared
+#SBATCH -o cdhit_%j.txt
+#SBATCH -e cdhit_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=10:00:00
+
+module load anaconda3
+conda activate spades_env
+
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/assembled_fasta" #this is whatever directory your assembled fastas are in
+
+# cd-hit-est c 2
+
+for infile in *.fa.transdecoder.pep
+do
+  base=$(basename ${infile} .fa.transdecoder.pep)
+  cd-hit-est -i ${infile} -o ${base}_cdhit_c2.pep -c 0.98 -aS 1 -aL 0.005 -M 3500
+done
+
+#second cd-hit
+#98% alignment coverage
+#run on both paragon assembles after first cd-hit and transdecoder

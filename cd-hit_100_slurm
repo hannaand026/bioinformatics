@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH -J cd-hit
+#SBATCH -p RM-shared
+#SBATCH -o cdhit_%j.txt
+#SBATCH -e cdhit_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -N 1
+#SBATCH --cpus-per-task=10
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=10:00:00
+
+module load anaconda3
+conda activate spades_env
+
+BASE_DIR=$( realpath ..)
+REF_DIR="${BASE_DIR}/assembled_fasta" #this is whatever directory your assembled fastas are in
+
+# cd-hit-est c 1
+for infile in *.fasta
+do
+  base=$(basename ${infile} .fasta)
+  cd-hit-est -i ${infile} -o ${base}_cdhit_1.fa -c 1 -aS 1 -aL 0.005 -M 3500
+done
+
+#first cd-hit
+#100% alignment coverage
