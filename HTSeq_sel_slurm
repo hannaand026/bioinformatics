@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH -J HTSeq_sel_2015_inc_slurm
+#SBATCH -p RM-shared
+#SBATCH -o HTSeq_sel_2015_inc_.txt
+#SBATCH -e HTSeq_sel_2015_inc_.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=5
+#SBATCH --time=47:00:00
+
+#this loop takes BWA results ending in .sam and counts the aligned reads with HTSeq
+
+## prior to running this script, to download HTSeq in Bridges-2 I had to make an environment with a certain python version
+#conda create -n alignment_env python=3.9.7
+#conda activate alignment_env
+#pip install HTSeq #installed HTSeq with pip
+
+module load anaconda3
+conda activate bwa_env
+
+#need to convert reference file to .gtf2 before running
+
+cd #insert wd with BWA results
+
+for infile in *R.sam
+do
+  base=$(basename ${infile} R.sam)
+
+  htseq-count -a 0 -m intersection-strict -s no ${infile} \
+  Merged_euk_ref.gtf2 > ${base}_htseq_out_a0
+done
+
+
