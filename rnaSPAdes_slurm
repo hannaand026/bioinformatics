@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p EM
+#SBATCH -o rna_output_in_situ_10pm_%j.txt
+#SBATCH -e rna_output_in_situ_10pm_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ha2606@columbia.edu
+#SBATCH -t 48:00:00
+#SBATCH -n 24
+
+cd #location of samples to assemble
+
+module load anaconda3
+conda activate spades_env
+#conda install -c bioconda spades
+
+mkdir -p ./rnaSPAdes_output
+
+rnaspades.py -m 1500 -t 8 -o rnaSPAdes_output --pe1-1 SM009_GATCAG_R1_noERCC.fastq --pe1-2 SM009_GATCAG_R2_noERCC.fastq
+
+#increased memory ask to 1500Gb (-m 1500). Went down in threads (-t 8) in order to decrease RAM requirements (based on spades manual).
+# -o is output name
+# --pe1-1 and --pe1-2 are paired input files
