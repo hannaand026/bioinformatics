@@ -27,9 +27,10 @@ cd ... #set your working directory
 
 # run eggnog mapper
 emapper.py --cpu 0 -i transcripts.faa -o transcripts_eggnog_output \
+--itype CDS --translate \
 --data_dir ${EGGNOG_DATA_DIR}
 
 #--cpu 0 runs with maximum number of available CPUs
 # -i is file input, assumed that they are proteins; -o is output name
 # --data_dir is where the databases are
-
+# --itype is input type, this indicates a .cds file 
